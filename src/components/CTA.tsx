@@ -15,23 +15,23 @@ const CTA = () => {
       <div className="section-container">
         <div className="max-w-4xl mx-auto glass-card p-8 md:p-12 lg:p-16 text-center animate-slideUp">
           <span className="inline-block px-3 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full mb-6">
-            Ready to Transform Your Approach?
+            Make Data-Driven Decisions
           </span>
           
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Start Anticipating Crises Today
+            Transform Historical Data into Future Insights
           </h2>
           
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join forward-thinking humanitarian organizations using data-driven forecasting to maximize impact and save more lives.
+            Leverage validated data from ACLED, EM-DAT, and HDI to forecast humanitarian crises and optimize your response strategy.
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Button size="lg" className="bg-primary text-white hover:bg-primary/90 rounded-md px-8 py-6 h-auto">
-              Schedule a Demo
+              Start Free Trial
             </Button>
             <Button variant="outline" size="lg" className="bg-white/90 rounded-md px-8 py-6 h-auto">
-              Contact Sales
+              View Pricing
             </Button>
           </div>
           

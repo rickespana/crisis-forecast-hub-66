@@ -1,45 +1,45 @@
 
 import React from 'react';
 import { 
-  TrendingUp, 
-  Map, 
-  AlertTriangle, 
   Database, 
+  Map, 
   BarChart3, 
-  Shield 
+  Globe, 
+  LineChart,
+  Building
 } from 'lucide-react';
 
 const Features = () => {
   const features = [
     {
-      icon: <TrendingUp className="h-6 w-6 text-primary" />,
-      title: "Predictive Intelligence",
-      description: "Leverage powerful AI models trained on historical and real-time data to forecast crisis regions with unprecedented accuracy."
+      icon: <Database className="h-6 w-6 text-primary" />,
+      title: "Historical Data Analysis",
+      description: "Leverage validated secondary data from trusted sources including ACLED for conflict data and EM-DAT for meteorological events."
     },
     {
       icon: <Map className="h-6 w-6 text-primary" />,
-      title: "Geospatial Analysis",
-      description: "Visualize risk forecasts with detailed regional mapping to pinpoint areas requiring the most urgent intervention."
+      title: "Crisis Forecasting",
+      description: "Advanced predictive modeling to identify regions with the highest likelihood of humanitarian crises based on historical patterns."
     },
     {
-      icon: <AlertTriangle className="h-6 w-6 text-primary" />,
-      title: "Early Warning System",
-      description: "Receive automated alerts when trend indicators suggest emerging risks in monitored regions."
-    },
-    {
-      icon: <Database className="h-6 w-6 text-primary" />,
-      title: "Resource Optimization",
-      description: "Make informed decisions about pre-positioning supplies and allocating resources based on data-driven forecasts."
+      icon: <Globe className="h-6 w-6 text-primary" />,
+      title: "HDI Integration",
+      description: "Incorporation of Human Development Index data to prioritize regions with the most humanitarian needs."
     },
     {
       icon: <BarChart3 className="h-6 w-6 text-primary" />,
-      title: "Impact Analytics",
-      description: "Measure the effectiveness of interventions with comprehensive analytics dashboards and reporting tools."
+      title: "Comprehensive Analytics",
+      description: "Detailed analysis and visualization of historical crisis patterns and socio-economic indicators."
     },
     {
-      icon: <Shield className="h-6 w-6 text-primary" />,
-      title: "Risk Mitigation",
-      description: "Develop targeted intervention strategies using our scenario planning and simulation capabilities."
+      icon: <LineChart className="h-6 w-6 text-primary" />,
+      title: "Trend Analysis",
+      description: "Track and analyze long-term crisis patterns using validated historical data to improve forecast accuracy."
+    },
+    {
+      icon: <Building className="h-6 w-6 text-primary" />,
+      title: "Institutional Access",
+      description: "Flexible subscription plans tailored for organizations of all sizes, from NGOs to major international institutions."
     }
   ];
 
