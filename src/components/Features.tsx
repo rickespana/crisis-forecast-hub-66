@@ -52,7 +52,7 @@ const Features = () => {
           </span>
           <h2 className="section-title">Data-Driven Decision Making</h2>
           <p className="text-muted-foreground text-lg">
-            Our comprehensive platform offers everything you need to anticipate and respond to humanitarian crises effectively.
+            Our comprehensive platform offers the analytics you need to anticipate where crises will impact the most vulnerable.
           </p>
         </div>
 
