@@ -18,9 +18,9 @@ const HowItWorks = () => {
     },
     {
       number: '03',
-      title: 'Risk Assessment',
-      description: 'The platform generates detailed risk assessments with confidence scores and recommended actions for each identified region.',
-      highlight: 'Actionable insights'
+      title: 'Data Visualization',
+      description: 'Interactive dashboarding services showcase the forecast model through intuitive maps, charts, and actionable insights for decision-makers.',
+      highlight: 'Interactive dashboards'
     },
     {
       number: '04',
