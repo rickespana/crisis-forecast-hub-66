@@ -34,7 +34,8 @@ const HeatMap = () => {
     }).addTo(map);
     
     // Sample data points (would be replaced with actual ACLED data in production)
-    const heatData = [
+    // Explicitly typed as an array of tuples [lat, lng, intensity?] to match the HeatLayer requirements
+    const heatData: [number, number, number][] = [
       // Africa
       [0.3476, 32.5825, 0.9],   // Uganda
       [9.145, 40.4897, 0.8],     // Ethiopia
