@@ -17,13 +17,10 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 pb-12">
           <div className="col-span-2 md:col-span-1 lg:col-span-2">
             <div className="flex items-center space-x-2 mb-6">
-              <div className="bg-primary/10 p-1 rounded-md">
-                <img 
-                  src="/lovable-uploads/a500322f-4784-40d9-9f8a-73d5d8025ed5.png" 
-                  alt="C-CAR Logo" 
-                  className="h-10 w-auto"
-                />
-              </div>
+              <span className="h-8 w-8 rounded-full bg-primary/90 flex items-center justify-center">
+                <span className="text-white font-bold text-sm">C</span>
+              </span>
+              <span className="font-semibold text-lg">C-CAR</span>
             </div>
             
             <p className="text-muted-foreground max-w-xs mb-6">
