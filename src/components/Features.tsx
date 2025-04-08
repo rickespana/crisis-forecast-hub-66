@@ -8,6 +8,8 @@ import {
   LineChart,
   Building
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
 
 const Features = () => {
   const features = [
@@ -70,6 +72,14 @@ const Features = () => {
               <p className="text-muted-foreground flex-grow">{feature.description}</p>
             </div>
           ))}
+        </div>
+
+        <div className="mt-16 text-center">
+          <Link to="/visualization">
+            <Button size="lg" variant="outline" className="bg-white/90 rounded-md px-8 py-6 h-auto">
+              View Crisis Forecast Demo <Map className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
         </div>
       </div>
     </section>
