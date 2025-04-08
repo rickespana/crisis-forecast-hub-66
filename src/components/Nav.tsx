@@ -29,15 +29,11 @@ const Nav = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <a href="#" className="flex items-center space-x-2">
-              <span className="h-8 w-8 rounded-full bg-primary/90 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">C</span>
-              </span>
-              <span className={cn(
-                "font-semibold text-lg transition-colors duration-300",
-                scrolled ? "text-foreground" : "text-foreground"
-              )}>
-                C-CAR
-              </span>
+              <img 
+                src="/lovable-uploads/c4b96b38-bfd1-4b8c-8d70-075736d5e165.png" 
+                alt="C-CAR Logo" 
+                className="h-10 w-auto"
+              />
             </a>
           </div>
           
