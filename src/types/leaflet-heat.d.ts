@@ -24,4 +24,4 @@ declare module 'leaflet' {
   function heatLayer(latlngs: Array<[number, number, number?]>, options?: HeatLayer.HeatLayerOptions): HeatLayer;
 }
 
-declare module 'leaflet.heat' {}
+declare module 'leaflet.heat';
