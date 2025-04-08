@@ -15,7 +15,6 @@ import Nav from '../components/Nav';
 import Footer from '../components/Footer';
 import { useToast } from '@/hooks/use-toast';
 
-// Mock data for the dashboard
 const forecastData = [
   { country: 'Ukraine', forecast: 4507, average: 4434, change: -2 },
   { country: 'Russia', forecast: 1601, average: 1287, change: 24 },
@@ -72,7 +71,6 @@ const historyData = [
   { month: 'Apr', historical: null, forecasted: 12800 },
 ];
 
-// HDI and vulnerability score for countries (mock data)
 const vulnerabilityData = [
   { country: 'Ethiopia', hdi: 0.498, vulnerabilityScore: 89 },
   { country: 'Sudan', hdi: 0.510, vulnerabilityScore: 87 },
@@ -86,14 +84,12 @@ const vulnerabilityData = [
   { country: 'Afghanistan', hdi: 0.478, vulnerabilityScore: 90 }
 ];
 
-// Saved dashboard views
 const savedViews = [
   { id: 1, name: "Global Overview", countries: ["All"], eventTypes: ["All Event Types"], timeframe: "12months" },
   { id: 2, name: "Africa Focus", countries: ["Ethiopia", "Sudan", "Somalia"], eventTypes: ["All Event Types"], timeframe: "6months" },
   { id: 3, name: "Middle East Crisis", countries: ["Syria", "Yemen", "Iraq"], eventTypes: ["Battles", "Violence Against Civilians"], timeframe: "3months" }
 ];
 
-// Color utilities
 const getChangeColor = (change: number) => {
   if (change > 15) return 'text-red-600';
   if (change > 5) return 'text-orange-500';
@@ -131,7 +127,6 @@ const TrialDashboard = () => {
   const currentMonth = new Date().toLocaleString('default', { month: 'long' });
   const currentYear = new Date().getFullYear();
 
-  // Load saved view when selected
   useEffect(() => {
     if (selectedView > 0) {
       const view = savedViews.find(v => v.id === selectedView);
@@ -147,7 +142,6 @@ const TrialDashboard = () => {
     }
   }, [selectedView]);
 
-  // Filter data based on selections
   const filteredForecastData = forecastData.filter(item => {
     if (selectedCountries.includes('All')) return true;
     return selectedCountries.includes(item.country);
@@ -188,7 +182,7 @@ const TrialDashboard = () => {
       setShowSubscribeModal(true);
     }, 2000);
   };
-  
+
   return (
     <div className="min-h-screen flex flex-col">
       <Nav />
@@ -205,7 +199,6 @@ const TrialDashboard = () => {
             </div>
           </div>
           
-          {/* Navigation Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid grid-cols-4 mb-6">
               <TabsTrigger value="forecasts">Forecasts</TabsTrigger>
@@ -496,8 +489,7 @@ const TrialDashboard = () => {
                       }
                     }
                   }}>
-                    {/* Fixed: Wrap chart elements in a single React component */}
-                    {chartType === 'line' ? (
+                    {chartType === 'line' && (
                       <LineChart
                         data={historyData}
                         margin={{ top: 5, right: 10, left: 10, bottom: 0 }}
@@ -529,7 +521,8 @@ const TrialDashboard = () => {
                           name="forecasted"
                         />
                       </LineChart>
-                    ) : chartType === 'bar' ? (
+                    )}
+                    {chartType === 'bar' && (
                       <BarChart
                         data={historyData}
                         margin={{ top: 5, right: 10, left: 10, bottom: 0 }}
@@ -545,7 +538,8 @@ const TrialDashboard = () => {
                         <Bar dataKey="historical" name="historical" fill="var(--color-historical)" />
                         <Bar dataKey="forecasted" name="forecasted" fill="var(--color-forecasted)" />
                       </BarChart>
-                    ) : (
+                    )}
+                    {chartType === 'area' && (
                       <AreaChart
                         data={historyData}
                         margin={{ top: 5, right: 10, left: 10, bottom: 0 }}
@@ -637,7 +631,6 @@ const TrialDashboard = () => {
                 </CardContent>
               </Card>
               
-              {/* Subscribe Modal */}
               {showSubscribeModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                   <Card className="w-full max-w-md">
@@ -713,4 +706,101 @@ const TrialDashboard = () => {
                               { month: 'Jul', accuracy: 91 },
                               { month: 'Aug', accuracy: 93 },
                               { month: 'Sep', accuracy: 90 },
-                              { month
+                              { month: 'Oct', accuracy: 88 },
+                              { month: 'Nov', accuracy: 86 },
+                              { month: 'Dec', accuracy: 89 }
+                            ]}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="month" />
+                            <YAxis domain={[75, 100]} />
+                            <Tooltip />
+                            <Area type="monotone" dataKey="accuracy" stroke="#8884d8" fill="#8884d8" />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="vulnerability">
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Vulnerability Index by Country</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left font-medium py-2 px-4">Country</th>
+                            <th className="text-right font-medium py-2 px-4">Human Development Index</th>
+                            <th className="text-right font-medium py-2 px-4">Vulnerability Score</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {vulnerabilityData.map((row) => (
+                            <tr key={row.country} className="border-b hover:bg-gray-50">
+                              <td className="py-2 px-4">{row.country}</td>
+                              <td className="text-right py-2 px-4">{row.hdi.toFixed(3)}</td>
+                              <td className="text-right py-2 px-4">
+                                <span className={`px-2 py-0.5 rounded ${getVulnerabilityColor(row.vulnerabilityScore)} bg-opacity-10`}>
+                                  {row.vulnerabilityScore}/100
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="about">
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>About This Dashboard</CardTitle>
+                  </CardHeader>
+                  <CardContent className="prose max-w-none">
+                    <p>The Complex Crises Anticipated Response (C-CAR) system provides forecasts of political violence and natural disasters to help organizations prepare for and respond to humanitarian crises.</p>
+                    <h3>Data Sources</h3>
+                    <p>Our forecasts are powered by a combination of:</p>
+                    <ul>
+                      <li>Historical event data from ACLED, EM-DAT, and other conflict/disaster databases</li>
+                      <li>Environmental and climate indicators from satellite imagery</li>
+                      <li>Economic indicators from World Bank and IMF</li>
+                      <li>News and social media analysis</li>
+                      <li>Expert assessments from regional specialists</li>
+                    </ul>
+                    <h3>Methodology</h3>
+                    <p>Our forecasting models utilize ensemble machine learning approaches, combining:</p>
+                    <ul>
+                      <li>Time series forecasting</li>
+                      <li>Natural language processing</li>
+                      <li>Spatial analysis</li>
+                      <li>Bayesian networks</li>
+                    </ul>
+                    <p>Models are trained on 10+ years of historical data and are updated monthly as new data becomes available.</p>
+                    <h3>How to Use This Dashboard</h3>
+                    <p>This trial version provides limited access to C-CAR's capabilities. Explore forecasts for major humanitarian crises, review model accuracy, and examine vulnerability indicators for high-risk countries.</p>
+                    <p>For full access including API integration, customized alerts, and detailed analysis, please contact our team to discuss subscription options.</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default TrialDashboard;
