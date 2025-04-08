@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ChartContainer, ChartLegend, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Button } from "@/components/ui/button";
@@ -7,12 +7,14 @@ import {
   LineChart, Line, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, 
   Tooltip, Legend, ResponsiveContainer, Area, AreaChart 
 } from 'recharts';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { 
   Map, AlertTriangle, BarChart3, LineChart as LineChartIcon, 
-  Filter, RefreshCw, Download, Info
+  Filter, RefreshCw, Download, Info, Save, Bell, PlusCircle
 } from 'lucide-react';
 import Nav from '../components/Nav';
 import Footer from '../components/Footer';
+import { useToast } from '@/hooks/use-toast';
 
 // Mock data for the dashboard
 const forecastData = [
@@ -43,6 +45,13 @@ const violenceTypeData = [
   { type: 'Explosions & Remote Violence', events: 6271, change: -5 },
   { type: 'Battles', events: 4108, change: 4 },
   { type: 'Violence Against Civilians', events: 2474, change: 7 }
+];
+
+const disasterTypeData = [
+  { type: 'Floods', events: 387, change: 12 },
+  { type: 'Droughts', events: 142, change: 8 },
+  { type: 'Earthquakes', events: 89, change: -3 },
+  { type: 'Wildfires', events: 76, change: 15 }
 ];
 
 const historyData = [
@@ -78,6 +87,13 @@ const vulnerabilityData = [
   { country: 'Afghanistan', hdi: 0.478, vulnerabilityScore: 90 }
 ];
 
+// Saved dashboard views
+const savedViews = [
+  { id: 1, name: "Global Overview", countries: ["All"], eventTypes: ["All Event Types"], timeframe: "12months" },
+  { id: 2, name: "Africa Focus", countries: ["Ethiopia", "Sudan", "Somalia"], eventTypes: ["All Event Types"], timeframe: "6months" },
+  { id: 3, name: "Middle East Crisis", countries: ["Syria", "Yemen", "Iraq"], eventTypes: ["Battles", "Violence Against Civilians"], timeframe: "3months" }
+];
+
 // Color utilities
 const getChangeColor = (change: number) => {
   if (change > 15) return 'text-red-600';
@@ -103,9 +119,76 @@ const getVulnerabilityColor = (score: number) => {
 };
 
 const TrialDashboard = () => {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('forecasts');
+  const [selectedView, setSelectedView] = useState(0);
+  const [selectedCountries, setSelectedCountries] = useState<string[]>(['All']);
+  const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>(['All Event Types']);
+  const [timeframe, setTimeframe] = useState('12months');
+  const [chartType, setChartType] = useState('line');
+  const [showSubscribeModal, setShowSubscribeModal] = useState(false);
+  const [dashboardName, setDashboardName] = useState('');
+  
   const currentMonth = new Date().toLocaleString('default', { month: 'long' });
   const currentYear = new Date().getFullYear();
+
+  // Load saved view when selected
+  useEffect(() => {
+    if (selectedView > 0) {
+      const view = savedViews.find(v => v.id === selectedView);
+      if (view) {
+        setSelectedCountries(view.countries);
+        setSelectedEventTypes(view.eventTypes);
+        setTimeframe(view.timeframe);
+        toast({
+          title: "Dashboard view loaded",
+          description: `Loaded "${view.name}" configuration`,
+        });
+      }
+    }
+  }, [selectedView]);
+
+  // Filter data based on selections
+  const filteredForecastData = forecastData.filter(item => {
+    if (selectedCountries.includes('All')) return true;
+    return selectedCountries.includes(item.country);
+  });
+
+  const handleSaveView = () => {
+    if (dashboardName.trim() !== '') {
+      toast({
+        title: "Configuration saved",
+        description: `"${dashboardName}" has been saved to your dashboard views.`,
+      });
+      setDashboardName('');
+      setShowSubscribeModal(true);
+    } else {
+      toast({
+        title: "Name required",
+        description: "Please provide a name for your dashboard configuration.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSetupAlerts = () => {
+    toast({
+      title: "Upgrade required",
+      description: "Alert configuration is available in the premium subscription.",
+    });
+    setShowSubscribeModal(true);
+  };
+
+  const handleGenerateReport = () => {
+    toast({
+      title: "Generating report",
+      description: "Your insights report is being prepared.",
+    });
+    
+    setTimeout(() => {
+      setShowSubscribeModal(true);
+    }, 2000);
+  };
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -124,99 +207,152 @@ const TrialDashboard = () => {
           </div>
           
           {/* Navigation Tabs */}
-          <div className="mb-6 border-b border-gray-200">
-            <nav className="flex space-x-8">
-              <button 
-                onClick={() => setActiveTab('forecasts')}
-                className={`pb-4 px-1 ${activeTab === 'forecasts' 
-                  ? 'border-b-2 border-primary text-primary font-medium' 
-                  : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-              >
-                Forecasts
-              </button>
-              <button 
-                onClick={() => setActiveTab('accuracy')}
-                className={`pb-4 px-1 ${activeTab === 'accuracy' 
-                  ? 'border-b-2 border-primary text-primary font-medium' 
-                  : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-              >
-                Accuracy Metrics
-              </button>
-              <button 
-                onClick={() => setActiveTab('vulnerability')}
-                className={`pb-4 px-1 ${activeTab === 'vulnerability' 
-                  ? 'border-b-2 border-primary text-primary font-medium' 
-                  : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-              >
-                Vulnerability Index
-              </button>
-              <button 
-                onClick={() => setActiveTab('about')}
-                className={`pb-4 px-1 ${activeTab === 'about' 
-                  ? 'border-b-2 border-primary text-primary font-medium' 
-                  : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-              >
-                About
-              </button>
-            </nav>
-          </div>
-          
-          {activeTab === 'forecasts' && (
-            <div className="space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid grid-cols-4 mb-6">
+              <TabsTrigger value="forecasts">Forecasts</TabsTrigger>
+              <TabsTrigger value="accuracy">Accuracy Metrics</TabsTrigger>
+              <TabsTrigger value="vulnerability">Vulnerability Index</TabsTrigger>
+              <TabsTrigger value="about">About</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="forecasts" className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="lg:col-span-1">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Global Forecasts for {currentMonth} {currentYear}</CardTitle>
+                    <CardTitle className="text-lg flex justify-between items-center">
+                      <span>Dashboard Configuration</span>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0"
+                        onClick={() => {
+                          setSelectedCountries(['All']);
+                          setSelectedEventTypes(['All Event Types']);
+                          setTimeframe('12months');
+                          setSelectedView(0);
+                          toast({
+                            title: "Reset complete",
+                            description: "Dashboard has been reset to default settings",
+                          });
+                        }}
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                      </Button>
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {violenceTypeData.map((item) => (
-                        <div key={item.type} className="space-y-1">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm font-medium">{item.type}</span>
-                            <span className="text-sm font-semibold">{item.events.toLocaleString()}</span>
-                          </div>
-                          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-primary" 
-                              style={{ width: `${Math.min(100, (item.events / 15000) * 100)}%` }} 
-                            />
-                          </div>
-                          <div className="flex justify-end">
-                            <span className={`text-xs px-2 py-0.5 rounded ${getChangeColor(item.change)} ${getChangeBackground(item.change)}`}>
-                              {item.change > 0 ? '+' : ''}{item.change}%
-                            </span>
-                          </div>
-                        </div>
-                      ))}
+                    <div className="space-y-4 mb-6">
+                      <h4 className="font-medium">Saved Views</h4>
+                      <div className="relative">
+                        <select 
+                          className="w-full p-2 pr-8 border rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-primary"
+                          value={selectedView}
+                          onChange={(e) => setSelectedView(Number(e.target.value))}
+                        >
+                          <option value={0}>Custom View</option>
+                          {savedViews.map(view => (
+                            <option key={view.id} value={view.id}>{view.name}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="flex">
+                        <input
+                          type="text"
+                          placeholder="Name this configuration..."
+                          className="flex-1 p-2 border rounded-l-md focus:outline-none focus:ring-1 focus:ring-primary"
+                          value={dashboardName}
+                          onChange={(e) => setDashboardName(e.target.value)}
+                        />
+                        <Button 
+                          variant="secondary"
+                          className="rounded-l-none"
+                          onClick={handleSaveView}
+                        >
+                          <Save className="h-4 w-4 mr-2" /> Save
+                        </Button>
+                      </div>
                     </div>
                     
-                    <div className="mt-6 space-y-4">
+                    <div className="mb-6 border-t pt-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-medium">Event Types</h4>
+                        <span className="text-xs text-muted-foreground">
+                          {selectedEventTypes.length === 1 && selectedEventTypes[0] === 'All Event Types' 
+                            ? 'All selected'
+                            : `${selectedEventTypes.length} selected`}
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        {[...violenceTypeData, ...disasterTypeData].map((item) => (
+                          <div key={item.type} className="space-y-1">
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center">
+                                <input
+                                  type="checkbox"
+                                  id={`type-${item.type}`}
+                                  className="rounded text-primary focus:ring-primary"
+                                  checked={selectedEventTypes.includes(item.type) || selectedEventTypes.includes('All Event Types')}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      if (item.type === 'All Event Types') {
+                                        setSelectedEventTypes(['All Event Types']);
+                                      } else {
+                                        setSelectedEventTypes(prev => 
+                                          prev.includes('All Event Types')
+                                            ? [item.type]
+                                            : [...prev.filter(t => t !== 'All Event Types'), item.type]
+                                        );
+                                      }
+                                    } else {
+                                      setSelectedEventTypes(prev => prev.filter(t => t !== item.type));
+                                    }
+                                  }}
+                                />
+                                <label htmlFor={`type-${item.type}`} className="ml-2 text-sm font-medium">
+                                  {item.type}
+                                </label>
+                              </div>
+                              <span className="text-sm font-semibold">
+                                {item.events.toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-primary" 
+                                style={{ width: `${Math.min(100, (item.events / 15000) * 100)}%` }} 
+                              />
+                            </div>
+                            <div className="flex justify-end">
+                              <span className={`text-xs px-2 py-0.5 rounded ${getChangeColor(item.change)} ${getChangeBackground(item.change)}`}>
+                                {item.change > 0 ? '+' : ''}{item.change}%
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4 border-t pt-4">
                       <h4 className="font-medium">Country</h4>
                       <div className="relative">
                         <select 
                           className="w-full p-2 pr-8 border rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-primary"
-                          defaultValue="all"
+                          value={selectedCountries.length === 1 ? selectedCountries[0] : "multiple"}
+                          onChange={(e) => {
+                            if (e.target.value !== "multiple") {
+                              setSelectedCountries([e.target.value]);
+                            }
+                          }}
                         >
                           <option value="all">All</option>
-                          <option value="ukraine">Ukraine</option>
-                          <option value="syria">Syria</option>
-                          <option value="sudan">Sudan</option>
-                          <option value="myanmar">Myanmar</option>
-                          <option value="ethiopia">Ethiopia</option>
-                        </select>
-                      </div>
-                      
-                      <h4 className="font-medium">Outcome</h4>
-                      <div className="relative">
-                        <select 
-                          className="w-full p-2 pr-8 border rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-primary"
-                          defaultValue="allEvents"
-                        >
-                          <option value="allEvents">All Event Types</option>
-                          <option value="battles">Battles</option>
-                          <option value="explosions">Explosions & Remote Violence</option>
-                          <option value="violence">Violence Against Civilians</option>
+                          <option value="multiple" disabled={selectedCountries.length <= 1}>
+                            {selectedCountries.length > 1 ? `${selectedCountries.length} countries selected` : ""}
+                          </option>
+                          {forecastData.map(item => (
+                            <option key={item.country} value={item.country}>{item.country}</option>
+                          ))}
                         </select>
                       </div>
                       
@@ -224,7 +360,8 @@ const TrialDashboard = () => {
                       <div className="relative">
                         <select 
                           className="w-full p-2 pr-8 border rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-primary"
-                          defaultValue="12months"
+                          value={timeframe}
+                          onChange={(e) => setTimeframe(e.target.value)}
                         >
                           <option value="12months">Last 12 months</option>
                           <option value="6months">Last 6 months</option>
@@ -232,21 +369,52 @@ const TrialDashboard = () => {
                         </select>
                       </div>
                       
-                      <h4 className="font-medium">Select forecast date</h4>
-                      <div className="relative">
-                        <select 
-                          className="w-full p-2 pr-8 border rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-primary"
-                          defaultValue={`${currentMonth.toLowerCase()}${currentYear}`}
+                      <h4 className="font-medium">Chart type</h4>
+                      <div className="flex space-x-2">
+                        <Button 
+                          variant={chartType === 'line' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setChartType('line')}
                         >
-                          <option value={`${currentMonth.toLowerCase()}${currentYear}`}>{currentMonth} {currentYear}</option>
-                          <option value={`apr${currentYear}`}>April {currentYear}</option>
-                          <option value={`may${currentYear}`}>May {currentYear}</option>
-                        </select>
+                          <LineChartIcon className="h-4 w-4 mr-2" />
+                          Line
+                        </Button>
+                        <Button 
+                          variant={chartType === 'bar' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setChartType('bar')}
+                        >
+                          <BarChart3 className="h-4 w-4 mr-2" />
+                          Bar
+                        </Button>
+                        <Button 
+                          variant={chartType === 'area' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setChartType('area')}
+                        >
+                          <LineChartIcon className="h-4 w-4 mr-2" />
+                          Area
+                        </Button>
                       </div>
+                    </div>
+
+                    <div className="mt-6 space-y-3 border-t pt-4">
+                      <Button 
+                        variant="outline" 
+                        className="w-full flex items-center justify-center"
+                        onClick={handleSetupAlerts}
+                      >
+                        <Bell className="h-4 w-4 mr-2" />
+                        Configure Email Alerts
+                      </Button>
                       
-                      <Button variant="ghost" className="w-full flex items-center justify-center mt-2">
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Reset to default view
+                      <Button 
+                        variant="outline" 
+                        className="w-full flex items-center justify-center"
+                        onClick={handleGenerateReport}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Generate Insights Report
                       </Button>
                     </div>
                   </CardContent>
@@ -329,46 +497,89 @@ const TrialDashboard = () => {
                       }
                     }
                   }}>
-                    <LineChart
-                      data={historyData}
-                      margin={{
-                        top: 5,
-                        right: 10,
-                        left: 10,
-                        bottom: 0,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis 
-                        dataKey="month"
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <YAxis
-                        tickLine={false}
-                        axisLine={false}
-                        tickFormatter={(value) => `${value / 1000}k`}
-                      />
-                      <Tooltip content={<ChartTooltipContent />} />
-                      <Line
-                        type="monotone"
-                        dataKey="historical"
-                        stroke="var(--color-historical)"
-                        strokeWidth={2}
-                        dot={{ r: 4, strokeWidth: 2 }}
-                        activeDot={{ r: 6, strokeWidth: 2 }}
-                        name="historical"
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="forecasted"
-                        stroke="var(--color-forecasted)"
-                        strokeWidth={2}
-                        dot={{ r: 4, strokeWidth: 2 }}
-                        activeDot={{ r: 6, strokeWidth: 2 }}
-                        name="forecasted"
-                      />
-                    </LineChart>
+                    {chartType === 'line' && (
+                      <LineChart
+                        data={historyData}
+                        margin={{ top: 5, right: 10, left: 10, bottom: 0 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="month" tickLine={false} axisLine={false} />
+                        <YAxis
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(value) => `${value / 1000}k`}
+                        />
+                        <Tooltip content={<ChartTooltipContent />} />
+                        <Line
+                          type="monotone"
+                          dataKey="historical"
+                          stroke="var(--color-historical)"
+                          strokeWidth={2}
+                          dot={{ r: 4, strokeWidth: 2 }}
+                          activeDot={{ r: 6, strokeWidth: 2 }}
+                          name="historical"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="forecasted"
+                          stroke="var(--color-forecasted)"
+                          strokeWidth={2}
+                          dot={{ r: 4, strokeWidth: 2 }}
+                          activeDot={{ r: 6, strokeWidth: 2 }}
+                          name="forecasted"
+                        />
+                      </LineChart>
+                    )}
+
+                    {chartType === 'bar' && (
+                      <BarChart
+                        data={historyData}
+                        margin={{ top: 5, right: 10, left: 10, bottom: 0 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="month" tickLine={false} axisLine={false} />
+                        <YAxis
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(value) => `${value / 1000}k`}
+                        />
+                        <Tooltip content={<ChartTooltipContent />} />
+                        <Bar dataKey="historical" name="historical" fill="var(--color-historical)" />
+                        <Bar dataKey="forecasted" name="forecasted" fill="var(--color-forecasted)" />
+                      </BarChart>
+                    )}
+
+                    {chartType === 'area' && (
+                      <AreaChart
+                        data={historyData}
+                        margin={{ top: 5, right: 10, left: 10, bottom: 0 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="month" tickLine={false} axisLine={false} />
+                        <YAxis
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(value) => `${value / 1000}k`}
+                        />
+                        <Tooltip content={<ChartTooltipContent />} />
+                        <Area
+                          type="monotone"
+                          dataKey="historical"
+                          stroke="var(--color-historical)"
+                          fill="var(--color-historical)"
+                          fillOpacity={0.3}
+                          name="historical"
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="forecasted"
+                          stroke="var(--color-forecasted)"
+                          fill="var(--color-forecasted)"
+                          fillOpacity={0.3}
+                          name="forecasted"
+                        />
+                      </AreaChart>
+                    )}
                   </ChartContainer>
                   <div className="flex justify-between items-center mt-2">
                     <ChartLegend
@@ -396,7 +607,7 @@ const TrialDashboard = () => {
                   <CardTitle className="text-lg">
                     Forecasted Events (All Event Types) for {currentMonth} {currentYear}
                     <span className="block text-sm font-normal mt-1 text-muted-foreground">
-                      Relative to 12-Month Average
+                      Relative to {timeframe === '12months' ? '12-Month' : timeframe === '6months' ? '6-Month' : '3-Month'} Average
                     </span>
                   </CardTitle>
                 </CardHeader>
@@ -412,7 +623,7 @@ const TrialDashboard = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {forecastData.map((row) => (
+                        {filteredForecastData.map((row) => (
                           <tr key={row.country} className="border-b hover:bg-gray-50">
                             <td className="py-2 px-4">{row.country}</td>
                             <td className="text-right py-2 px-4">{row.forecast}</td>
@@ -429,303 +640,356 @@ const TrialDashboard = () => {
                   </div>
                 </CardContent>
               </Card>
-            </div>
-          )}
-          
-          {activeTab === 'vulnerability' && (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Vulnerability Index Based on Human Development Index</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between text-sm font-medium text-muted-foreground">
-                      <span>Higher Vulnerability</span>
-                      <span>Lower Vulnerability</span>
+              
+              {/* Subscribe Modal */}
+              {showSubscribeModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                  <Card className="w-full max-w-md">
+                    <CardHeader>
+                      <CardTitle>Upgrade to Premium</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p>To unlock premium features including:</p>
+                      <ul className="list-disc pl-5 space-y-2">
+                        <li>Save custom dashboard configurations</li>
+                        <li>Set up email alerts for forecast changes</li>
+                        <li>Generate detailed insights reports</li>
+                        <li>Access historical data going back 5 years</li>
+                        <li>API access for integration with your systems</li>
+                      </ul>
+                      <div className="flex justify-end space-x-3 mt-6">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setShowSubscribeModal(false)}
+                        >
+                          Continue with Trial
+                        </Button>
+                        <Button onClick={() => {
+                          toast({
+                            title: "Thank you for your interest!",
+                            description: "This is a demo application. In a real app, you would be directed to subscription options.",
+                          });
+                          setShowSubscribeModal(false);
+                        }}>
+                          View Plans
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="accuracy">
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Forecast Accuracy Metrics</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="flex flex-col items-center justify-center p-6 border rounded-lg">
+                        <div className="text-3xl font-bold text-primary">89%</div>
+                        <div className="mt-2 text-sm text-muted-foreground text-center">Overall Accuracy Rate</div>
+                      </div>
+                      <div className="flex flex-col items-center justify-center p-6 border rounded-lg">
+                        <div className="text-3xl font-bold text-primary">±5.2%</div>
+                        <div className="mt-2 text-sm text-muted-foreground text-center">Average Margin of Error</div>
+                      </div>
+                      <div className="flex flex-col items-center justify-center p-6 border rounded-lg">
+                        <div className="text-3xl font-bold text-primary">92%</div>
+                        <div className="mt-2 text-sm text-muted-foreground text-center">Directional Accuracy</div>
+                      </div>
                     </div>
+                    
+                    <div className="mt-8">
+                      <h3 className="text-lg font-medium mb-4">Historical Forecast Performance</h3>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart
+                            data={[
+                              { month: 'Jan', accuracy: 85 },
+                              { month: 'Feb', accuracy: 87 },
+                              { month: 'Mar', accuracy: 82 },
+                              { month: 'Apr', accuracy: 88 },
+                              { month: 'May', accuracy: 90 },
+                              { month: 'Jun', accuracy: 89 },
+                              { month: 'Jul', accuracy: 91 },
+                              { month: 'Aug', accuracy: 93 },
+                              { month: 'Sep', accuracy: 90 },
+                              { month: 'Oct', accuracy: 87 },
+                              { month: 'Nov', accuracy: 89 },
+                              { month: 'Dec', accuracy: 91 }
+                            ]}
+                            margin={{
+                              top: 10,
+                              right: 30,
+                              left: 0,
+                              bottom: 0,
+                            }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="month" />
+                            <YAxis domain={[75, 100]} />
+                            <Tooltip />
+                            <Area type="monotone" dataKey="accuracy" stroke="#8884d8" fill="#8884d8" />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Regional Accuracy Analysis</CardTitle>
+                  </CardHeader>
+                  <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <h3 className="text-lg font-semibold mb-4">Most Vulnerable Countries</h3>
-                        <div className="space-y-4">
-                          {vulnerabilityData
-                            .sort((a, b) => b.vulnerabilityScore - a.vulnerabilityScore)
-                            .slice(0, 10)
-                            .map((item) => (
-                              <div key={item.country} className="flex items-center">
-                                <div className="w-1/3 font-medium">{item.country}</div>
-                                <div className="w-2/3">
-                                  <div className="flex items-center">
-                                    <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                      <div 
-                                        className="h-2.5 rounded-full bg-gradient-to-r from-red-500 to-yellow-500" 
-                                        style={{ width: `${item.vulnerabilityScore}%` }}
-                                      ></div>
-                                    </div>
-                                    <span className={`ml-2 text-sm font-medium ${getVulnerabilityColor(item.vulnerabilityScore)}`}>
-                                      {item.vulnerabilityScore}
-                                    </span>
-                                  </div>
-                                  <div className="mt-1 text-xs text-muted-foreground">
-                                    HDI: {item.hdi.toFixed(3)}
-                                  </div>
+                        <h4 className="text-lg font-medium mb-4">Accuracy by Region</h4>
+                        <ul className="space-y-4">
+                          {[
+                            { region: 'Middle East & North Africa', accuracy: 91 },
+                            { region: 'Sub-Saharan Africa', accuracy: 87 },
+                            { region: 'South Asia', accuracy: 88 },
+                            { region: 'Europe & Central Asia', accuracy: 93 },
+                            { region: 'East Asia & Pacific', accuracy: 90 },
+                            { region: 'Latin America & Caribbean', accuracy: 86 }
+                          ].map((item) => (
+                            <li key={item.region} className="flex items-center">
+                              <span className="w-2/3">{item.region}</span>
+                              <div className="w-1/3 flex items-center">
+                                <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                                  <div 
+                                    className="h-2.5 rounded-full bg-primary" 
+                                    style={{ width: `${item.accuracy}%` }}
+                                  ></div>
                                 </div>
+                                <span className="text-sm font-medium">{item.accuracy}%</span>
                               </div>
-                            ))}
-                        </div>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                       
                       <div>
-                        <h3 className="text-lg font-semibold mb-4">Vulnerability Metrics</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                          <Card>
-                            <CardContent className="p-4">
-                              <div className="text-2xl font-bold">87.6</div>
-                              <div className="text-sm font-medium text-muted-foreground">
-                                Average vulnerability score
+                        <h4 className="text-lg font-medium mb-4">Accuracy by Event Type</h4>
+                        <ul className="space-y-4">
+                          {[
+                            { type: 'Battles', accuracy: 92 },
+                            { type: 'Explosions & Remote Violence', accuracy: 89 },
+                            { type: 'Violence Against Civilians', accuracy: 87 },
+                            { type: 'Floods', accuracy: 91 },
+                            { type: 'Droughts', accuracy: 88 },
+                            { type: 'Earthquakes', accuracy: 90 }
+                          ].map((item) => (
+                            <li key={item.type} className="flex items-center">
+                              <span className="w-2/3">{item.type}</span>
+                              <div className="w-1/3 flex items-center">
+                                <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                                  <div 
+                                    className="h-2.5 rounded-full bg-primary" 
+                                    style={{ width: `${item.accuracy}%` }}
+                                  ></div>
+                                </div>
+                                <span className="text-sm font-medium">{item.accuracy}%</span>
                               </div>
-                            </CardContent>
-                          </Card>
-                          <Card>
-                            <CardContent className="p-4">
-                              <div className="text-2xl font-bold">0.471</div>
-                              <div className="text-sm font-medium text-muted-foreground">
-                                Average HDI
-                              </div>
-                            </CardContent>
-                          </Card>
-                          <Card>
-                            <CardContent className="p-4">
-                              <div className="text-2xl font-bold">3</div>
-                              <div className="text-sm font-medium text-muted-foreground">
-                                Countries with critical status
-                              </div>
-                            </CardContent>
-                          </Card>
-                          <Card>
-                            <CardContent className="p-4">
-                              <div className="text-2xl font-bold">7</div>
-                              <div className="text-sm font-medium text-muted-foreground">
-                                Countries at high risk
-                              </div>
-                            </CardContent>
-                          </Card>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="vulnerability">
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Vulnerability Index Based on Human Development Index</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex justify-between text-sm font-medium text-muted-foreground">
+                        <span>Higher Vulnerability</span>
+                        <span>Lower Vulnerability</span>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <h3 className="text-lg font-semibold mb-4">Most Vulnerable Countries</h3>
+                          <div className="space-y-4">
+                            {vulnerabilityData
+                              .sort((a, b) => b.vulnerabilityScore - a.vulnerabilityScore)
+                              .slice(0, 10)
+                              .map((item) => (
+                                <div key={item.country} className="flex items-center">
+                                  <div className="w-1/3 font-medium">{item.country}</div>
+                                  <div className="w-2/3">
+                                    <div className="flex items-center">
+                                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div 
+                                          className="h-2.5 rounded-full bg-gradient-to-r from-red-500 to-yellow-500" 
+                                          style={{ width: `${item.vulnerabilityScore}%` }}
+                                        ></div>
+                                      </div>
+                                      <span className={`ml-2 text-sm font-medium ${getVulnerabilityColor(item.vulnerabilityScore)}`}>
+                                        {item.vulnerabilityScore}
+                                      </span>
+                                    </div>
+                                    <div className="mt-1 text-xs text-muted-foreground">
+                                      HDI: {item.hdi.toFixed(3)}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
                         </div>
                         
-                        <div className="mt-6">
-                          <h3 className="text-lg font-semibold mb-4">Understanding the Index</h3>
-                          <p className="text-sm text-gray-600">
-                            The vulnerability index is calculated based on the Human Development Index (HDI) 
-                            and additional conflict/disaster risk factors. Countries with lower HDI scores 
-                            typically have higher vulnerability to crises. The index ranges from 0-100, 
-                            with higher scores indicating greater vulnerability.
-                          </p>
+                        <div>
+                          <h3 className="text-lg font-semibold mb-4">Vulnerability Metrics</h3>
+                          <div className="grid grid-cols-2 gap-4">
+                            <Card>
+                              <CardContent className="p-4">
+                                <div className="text-2xl font-bold">87.6</div>
+                                <div className="text-sm font-medium text-muted-foreground">
+                                  Average vulnerability score
+                                </div>
+                              </CardContent>
+                            </Card>
+                            <Card>
+                              <CardContent className="p-4">
+                                <div className="text-2xl font-bold">0.471</div>
+                                <div className="text-sm font-medium text-muted-foreground">
+                                  Average HDI
+                                </div>
+                              </CardContent>
+                            </Card>
+                            <Card>
+                              <CardContent className="p-4">
+                                <div className="text-2xl font-bold">3</div>
+                                <div className="text-sm font-medium text-muted-foreground">
+                                  Countries with critical status
+                                </div>
+                              </CardContent>
+                            </Card>
+                            <Card>
+                              <CardContent className="p-4">
+                                <div className="text-2xl font-bold">7</div>
+                                <div className="text-sm font-medium text-muted-foreground">
+                                  Countries at high risk
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </div>
+                          
+                          <div className="mt-6">
+                            <h3 className="text-lg font-semibold mb-4">Understanding the Index</h3>
+                            <p className="text-sm text-gray-600">
+                              The vulnerability index is calculated based on the Human Development Index (HDI) 
+                              and additional conflict/disaster risk factors. Countries with lower HDI scores 
+                              typically have higher vulnerability to crises. The index ranges from 0-100, 
+                              with higher scores indicating greater vulnerability.
+                            </p>
+                            
+                            <Button 
+                              className="mt-4 w-full" 
+                              variant="outline"
+                              onClick={() => {
+                                toast({
+                                  title: "Premium feature",
+                                  description: "Detailed vulnerability reports are available in the premium subscription.",
+                                });
+                                setShowSubscribeModal(true);
+                              }}
+                            >
+                              <PlusCircle className="h-4 w-4 mr-2" />
+                              Request Full Vulnerability Report
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Vulnerability & Crisis Correlation</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={vulnerabilityData}
-                        margin={{
-                          top: 20,
-                          right: 30,
-                          left: 20,
-                          bottom: 5,
-                        }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="country" />
-                        <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
-                        <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
-                        <Tooltip />
-                        <Legend />
-                        <Bar yAxisId="left" dataKey="vulnerabilityScore" name="Vulnerability Score" fill="#8884d8" />
-                        <Bar yAxisId="right" dataKey="hdi" name="HDI Score" fill="#82ca9d" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-          
-          {activeTab === 'accuracy' && (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Forecast Accuracy Metrics</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="flex flex-col items-center justify-center p-6 border rounded-lg">
-                      <div className="text-3xl font-bold text-primary">89%</div>
-                      <div className="mt-2 text-sm text-muted-foreground text-center">Overall Accuracy Rate</div>
-                    </div>
-                    <div className="flex flex-col items-center justify-center p-6 border rounded-lg">
-                      <div className="text-3xl font-bold text-primary">±5.2%</div>
-                      <div className="mt-2 text-sm text-muted-foreground text-center">Average Margin of Error</div>
-                    </div>
-                    <div className="flex flex-col items-center justify-center p-6 border rounded-lg">
-                      <div className="text-3xl font-bold text-primary">92%</div>
-                      <div className="mt-2 text-sm text-muted-foreground text-center">Directional Accuracy</div>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-8">
-                    <h3 className="text-lg font-medium mb-4">Historical Forecast Performance</h3>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Vulnerability & Crisis Correlation</CardTitle>
+                  </CardHeader>
+                  <CardContent>
                     <div className="h-80">
                       <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart
-                          data={[
-                            { month: 'Jan', accuracy: 85 },
-                            { month: 'Feb', accuracy: 87 },
-                            { month: 'Mar', accuracy: 82 },
-                            { month: 'Apr', accuracy: 88 },
-                            { month: 'May', accuracy: 90 },
-                            { month: 'Jun', accuracy: 89 },
-                            { month: 'Jul', accuracy: 91 },
-                            { month: 'Aug', accuracy: 93 },
-                            { month: 'Sep', accuracy: 90 },
-                            { month: 'Oct', accuracy: 87 },
-                            { month: 'Nov', accuracy: 89 },
-                            { month: 'Dec', accuracy: 91 }
-                          ]}
+                        <BarChart
+                          data={vulnerabilityData}
                           margin={{
-                            top: 10,
+                            top: 20,
                             right: 30,
-                            left: 0,
-                            bottom: 0,
+                            left: 20,
+                            bottom: 5,
                           }}
                         >
                           <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="month" />
-                          <YAxis domain={[75, 100]} />
+                          <XAxis dataKey="country" />
+                          <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
+                          <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
                           <Tooltip />
-                          <Area type="monotone" dataKey="accuracy" stroke="#8884d8" fill="#8884d8" />
-                        </AreaChart>
+                          <Legend />
+                          <Bar yAxisId="left" dataKey="vulnerabilityScore" name="Vulnerability Score" fill="#8884d8" />
+                          <Bar yAxisId="right" dataKey="hdi" name="HDI Score" fill="#82ca9d" />
+                        </BarChart>
                       </ResponsiveContainer>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Regional Accuracy Analysis</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="text-lg font-medium mb-4">Accuracy by Region</h4>
-                      <ul className="space-y-4">
-                        {[
-                          { region: 'Middle East & North Africa', accuracy: 91 },
-                          { region: 'Sub-Saharan Africa', accuracy: 87 },
-                          { region: 'South Asia', accuracy: 88 },
-                          { region: 'Europe & Central Asia', accuracy: 93 },
-                          { region: 'East Asia & Pacific', accuracy: 90 },
-                          { region: 'Latin America & Caribbean', accuracy: 86 }
-                        ].map((item) => (
-                          <li key={item.region} className="flex items-center">
-                            <span className="w-2/3">{item.region}</span>
-                            <div className="w-1/3 flex items-center">
-                              <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                                <div 
-                                  className="h-2.5 rounded-full bg-primary" 
-                                  style={{ width: `${item.accuracy}%` }}
-                                ></div>
-                              </div>
-                              <span className="text-sm font-medium">{item.accuracy}%</span>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="about">
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>About Complex Crises Anticipated Response (C-CAR)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="mb-4">
+                      C-CAR is an advanced crisis forecasting platform that helps humanitarian organizations 
+                      anticipate and respond to emergencies more effectively. Our platform integrates data from 
+                      multiple sources to provide accurate forecasts of conflicts, natural disasters, and other 
+                      crises around the world.
+                    </p>
                     
-                    <div>
-                      <h4 className="text-lg font-medium mb-4">Accuracy by Event Type</h4>
-                      <ul className="space-y-4">
-                        {[
-                          { type: 'Battles', accuracy: 92 },
-                          { type: 'Explosions & Remote Violence', accuracy: 89 },
-                          { type: 'Violence Against Civilians', accuracy: 87 },
-                          { type: 'Protests', accuracy: 83 },
-                          { type: 'Natural Disasters', accuracy: 91 },
-                          { type: 'Disease Outbreaks', accuracy: 84 }
-                        ].map((item) => (
-                          <li key={item.type} className="flex items-center">
-                            <span className="w-2/3">{item.type}</span>
-                            <div className="w-1/3 flex items-center">
-                              <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                                <div 
-                                  className="h-2.5 rounded-full bg-primary" 
-                                  style={{ width: `${item.accuracy}%` }}
-                                ></div>
-                              </div>
-                              <span className="text-sm font-medium">{item.accuracy}%</span>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-          
-          {activeTab === 'about' && (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>About Complex Crises Anticipated Response (C-CAR)</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="mb-4">
-                    C-CAR is an advanced crisis forecasting platform that helps humanitarian organizations 
-                    anticipate and respond to emergencies more effectively. Our platform integrates data from 
-                    multiple sources to provide accurate forecasts of conflicts, natural disasters, and other 
-                    crises around the world.
-                  </p>
-                  
-                  <h3 className="text-xl font-semibold mt-6 mb-3">How It Works</h3>
-                  <p className="mb-4">
-                    Our forecasting model combines historical conflict data, climate information, socioeconomic 
-                    indicators, and real-time news feeds to generate predictions about potential crises. The 
-                    platform uses machine learning algorithms that have been trained on decades of historical data 
-                    to identify patterns and predict future events.
-                  </p>
-                  
-                  <h3 className="text-xl font-semibold mt-6 mb-3">Data Sources</h3>
-                  <ul className="list-disc pl-6 space-y-2 mb-4">
-                    <li>Armed Conflict Location & Event Data Project (ACLED)</li>
-                    <li>UN Human Development Index</li>
-                    <li>World Bank Development Indicators</li>
-                    <li>UNHCR Displacement Data</li>
-                    <li>Climate and weather prediction models</li>
-                    <li>News and social media analysis</li>
-                  </ul>
-                  
-                  <h3 className="text-xl font-semibold mt-6 mb-3">Trial Version Limitations</h3>
-                  <p>
-                    This free trial version provides access to basic forecasting features and historical data. 
-                    For full access to all features including custom alerts, detailed country reports, API access, 
-                    and more, please consider upgrading to our premium subscription.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+                    <h3 className="text-xl font-semibold mt-6 mb-3">How It Works</h3>
+                    <p className="mb-4">
+                      Our forecasting model combines historical conflict data, climate information, socioeconomic 
+                      indicators, and real-time news feeds to generate predictions about potential crises. The 
+                      platform uses machine learning algorithms that have been trained on decades of historical data 
+                      to identify patterns and predict future events.
+                    </p>
+                    
+                    <h3 className="text-xl font-semibold mt-6 mb-3">Data Sources</h3>
+                    <ul className="list-disc pl-6 space-y-2 mb-4">
+                      <li>Armed Conflict Location & Event Data Project (ACLED)</li>
+                      <li>UN Human Development Index</li>
+                      <li>World Bank Development Indicators</li>
+                      <li>UNHCR Displacement Data</li>
+                      <li>Climate and weather prediction models</li>
+                      <li>News and social media analysis</li>
+                    </ul>
+                    
+                    <h3 className="text-xl font-semibold mt-6 mb-3">Trial Version Limitations</h3>
+                    <p>
+                      This free trial version provides access to basic forecasting features and historical data. 
+                      For full access to all features including custom alerts, detailed country reports, API access, 
+                      and more, please consider upgrading to our premium subscription.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
           
           <div className="mt-8">
             <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-none">
@@ -737,7 +1001,7 @@ const TrialDashboard = () => {
                   </div>
                   <div className="flex space-x-4">
                     <Button variant="outline">Learn More</Button>
-                    <Button>Upgrade Now</Button>
+                    <Button onClick={() => setShowSubscribeModal(true)}>Upgrade Now</Button>
                   </div>
                 </div>
               </CardContent>
