@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Link } from 'react-router-dom';
 
 const Nav = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -28,7 +29,7 @@ const Nav = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <a href="#" className="flex items-center space-x-2">
+            <Link to="/" className="flex items-center space-x-2">
               <span className="h-8 w-8 rounded-full bg-primary/90 flex items-center justify-center">
                 <span className="text-white font-bold text-sm">C</span>
               </span>
@@ -38,7 +39,7 @@ const Nav = () => {
               )}>
                 C-CAR
               </span>
-            </a>
+            </Link>
           </div>
           
           <nav className="hidden md:flex items-center space-x-8">
@@ -69,15 +70,17 @@ const Nav = () => {
             >
               Log In
             </Button>
-            <Button 
-              size="sm" 
-              className={cn(
-                "transition-all duration-300",
-                "bg-primary text-white hover:bg-primary/90"
-              )}
-            >
-              Request Demo
-            </Button>
+            <Link to="/trial-dashboard">
+              <Button 
+                size="sm" 
+                className={cn(
+                  "transition-all duration-300",
+                  "bg-primary text-white hover:bg-primary/90"
+                )}
+              >
+                Start Free Trial
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
