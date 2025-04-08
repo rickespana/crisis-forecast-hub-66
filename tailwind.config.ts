@@ -120,7 +120,9 @@ export default {
 			},
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-				'hero-pattern': 'linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3))'
+				'hero-pattern': 'linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3))',
+				'ccar-logo': "url('/lovable-uploads/c4b96b38-bfd1-4b8c-8d70-075736d5e165.png')",
+				'blue-tech': "linear-gradient(135deg, #001233 0%, #023E8A 100%)"
 			}
 		}
 	},
