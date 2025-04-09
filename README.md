@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# C-CAR Frontend Interface
 
 ## Project info
 
