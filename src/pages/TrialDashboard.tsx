@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ChartContainer, ChartLegend, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -8,34 +9,35 @@ import {
 } from 'recharts';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { 
-  Map, AlertTriangle, BarChart3, LineChart as LineChartIcon, 
-  Filter, RefreshCw, Download, Info, Save, Bell, PlusCircle
+  Map, ChevronLeft, ChevronRight, Download, Info, Save, Bell, BarChart3, 
+  LineChart as LineChartIcon, Filter, RefreshCw
 } from 'lucide-react';
 import Nav from '../components/Nav';
 import Footer from '../components/Footer';
 import { useToast } from '@/hooks/use-toast';
 
+// Data for the crisis map and charts
 const forecastData = [
-  { country: 'Ukraine', forecast: 4507, average: 4434, change: -2 },
-  { country: 'Russia', forecast: 1601, average: 1287, change: 24 },
-  { country: 'Myanmar', forecast: 974, average: 1030, change: -5 },
-  { country: 'Syria', forecast: 744, average: 987, change: -25 },
-  { country: 'Mexico', forecast: 637, average: 626, change: 2 },
-  { country: 'Brazil', forecast: 632, average: 746, change: -15 },
-  { country: 'Palestine', forecast: 508, average: 1067, change: -52 },
-  { country: 'Sudan', forecast: 379, average: 431, change: -12 },
-  { country: 'Somalia', forecast: 294, average: 244, change: 20 },
-  { country: 'Lebanon', forecast: 259, average: 988, change: -74 },
-  { country: 'Iraq', forecast: 235, average: 521, change: -55 },
-  { country: 'Nigeria', forecast: 230, average: 329, change: -30 },
-  { country: 'Yemen', forecast: 185, average: 168, change: 10 },
-  { country: 'Pakistan', forecast: 183, average: 167, change: 10 },
-  { country: 'Colombia', forecast: 180, average: 181, change: -1 },
-  { country: 'Dem. Rep. Congo', forecast: 179, average: 152, change: 18 },
-  { country: 'Ethiopia', forecast: 114, average: 198, change: -42 },
-  { country: 'Burkina Faso', forecast: 107, average: 109, change: -2 },
-  { country: 'Mali', forecast: 106, average: 117, change: -9 },
-  { country: 'Haiti', forecast: 98, average: 88, change: 11 }
+  { country: 'Ukraine', forecast: 5123, average: 4616, change: 11 },
+  { country: 'Russia', forecast: 1668, average: 1565, change: 7 },
+  { country: 'Myanmar', forecast: 902, average: 1003, change: -10 },
+  { country: 'Syria', forecast: 748, average: 967, change: -23 },
+  { country: 'Palestine', forecast: 759, average: 1029, change: -26 },
+  { country: 'Mexico', forecast: 641, average: 636, change: 1 },
+  { country: 'Brazil', forecast: 552, average: 736, change: -25 },
+  { country: 'Iraq', forecast: 443, average: 530, change: -16 },
+  { country: 'Sudan', forecast: 418, average: 453, change: -8 },
+  { country: 'Somalia', forecast: 359, average: 269, change: 33 },
+  { country: 'Yemen', forecast: 301, average: 352, change: -14 },
+  { country: 'Nigeria', forecast: 253, average: 329, change: -23 },
+  { country: 'Dem. Rep. Congo', forecast: 234, average: 208, change: 12 },
+  { country: 'Pakistan', forecast: 217, average: 179, change: 21 },
+  { country: 'Ethiopia', country: 'Ethiopia', forecast: 216, average: 280, change: -23 },
+  { country: 'Colombia', forecast: 192, average: 186, change: 3 },
+  { country: 'Lebanon', forecast: 190, average: 286, change: -33 },
+  { country: 'Burkina Faso', forecast: 142, average: 154, change: -8 },
+  { country: 'Mali', forecast: 127, average: 136, change: -7 },
+  { country: 'South Sudan', forecast: 127, average: 91, change: 40 }
 ];
 
 const violenceTypeData = [
@@ -84,6 +86,55 @@ const vulnerabilityData = [
   { country: 'Afghanistan', hdi: 0.478, vulnerabilityScore: 90 }
 ];
 
+// Data for new chart types
+const conflictClusterData = [
+  { country: 'Afghanistan', conflicts: 200000, cluster: 1 },
+  { country: 'Ukraine', conflicts: 180000, cluster: 1 },
+  { country: 'Yemen', conflicts: 170000, cluster: 1 },
+  { country: 'Syria', conflicts: 130000, cluster: 2 },
+  { country: 'Iraq', conflicts: 100000, cluster: 2 },
+  { country: 'Sudan', conflicts: 95000, cluster: 2 },
+  { country: 'Myanmar', conflicts: 85000, cluster: 3 },
+  { country: 'Somalia', conflicts: 80000, cluster: 3 },
+  { country: 'Nigeria', conflicts: 70000, cluster: 3 },
+  { country: 'Palestine', conflicts: 65000, cluster: 3 },
+  { country: 'Ethiopia', conflicts: 45000, cluster: 3 },
+  { country: 'Pakistan', conflicts: 40000, cluster: 3 },
+  { country: 'Democratic Republic of Congo', conflicts: 35000, cluster: 3 },
+  { country: 'South Sudan', conflicts: 30000, cluster: 3 },
+  { country: 'Brazil', conflicts: 25000, cluster: 3 },
+  { country: 'Burkina Faso', conflicts: 20000, cluster: 3 },
+  { country: 'Libya', conflicts: 15000, cluster: 3 },
+  { country: 'Mali', conflicts: 10000, cluster: 3 },
+  { country: 'Mexico', conflicts: 5000, cluster: 3 }
+];
+
+const disasterData = [
+  { country: 'China', injured: 1671 },
+  { country: 'India', injured: 1133 },
+  { country: 'United States', injured: 798 },
+  { country: 'Indonesia', injured: 682 },
+  { country: 'Philippines', injured: 679 },
+  { country: 'Pakistan', injured: 651 },
+  { country: 'Iran', injured: 636 },
+  { country: 'Japan', injured: 634 },
+  { country: 'Bangladesh', injured: 495 },
+  { country: 'Nigeria', injured: 481 }
+];
+
+const hdiDisasterData = [
+  { country: 'Uganda', hdi: 590.8, conflictEvents: 20, numDisaster: 95 },
+  { country: 'Sri Lanka', hdi: 616.9, conflictEvents: 150, numDisaster: 105 },
+  { country: 'Sudan', hdi: 629.0, conflictEvents: 5000, numDisaster: 200 },
+  { country: 'Nigeria', hdi: 646.2, conflictEvents: 8000, numDisaster: 300 },
+  { country: 'Thailand', hdi: 679.7, conflictEvents: 1000, numDisaster: 400 },
+  { country: 'Egypt', hdi: 685.4, conflictEvents: 1200, numDisaster: 350 },
+  { country: 'Kenya', hdi: 691.1, conflictEvents: 1500, numDisaster: 250 },
+  { country: 'China', hdi: 725.1, conflictEvents: 2000, numDisaster: 1355 },
+  { country: 'South Africa', hdi: 850.7, conflictEvents: 10000, numDisaster: 500 },
+  { country: 'Algeria', hdi: 891.1, conflictEvents: 13574, numDisaster: 600 }
+];
+
 const savedViews = [
   { id: 1, name: "Global Overview", countries: ["All"], eventTypes: ["All Event Types"], timeframe: "12months" },
   { id: 2, name: "Africa Focus", countries: ["Ethiopia", "Sudan", "Somalia"], eventTypes: ["All Event Types"], timeframe: "6months" },
@@ -113,9 +164,19 @@ const getVulnerabilityColor = (score: number) => {
   return 'text-blue-500';
 };
 
+const getClusterColor = (cluster: number) => {
+  switch (cluster) {
+    case 1: return '#3B82F6'; // blue
+    case 2: return '#F97316'; // orange
+    case 3: return '#EF4444'; // red
+    case 4: return '#10B981'; // green
+    default: return '#6B7280'; // gray
+  }
+};
+
 const TrialDashboard = () => {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('forecasts');
+  const [activeTab, setActiveTab] = useState('needsIndex');
   const [selectedView, setSelectedView] = useState(0);
   const [selectedCountries, setSelectedCountries] = useState<string[]>(['All']);
   const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>(['All Event Types']);
@@ -123,6 +184,12 @@ const TrialDashboard = () => {
   const [chartType, setChartType] = useState('line');
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
   const [dashboardName, setDashboardName] = useState('');
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
+  const slides = [
+    { id: 'needsIndex', title: 'Most Needs Index Map', subtitle: 'Bar charts of most affected countries' },
+    { id: 'hdiForecasts', title: 'HDI aggregation per conflict + Forecast', subtitle: 'HDI aggregation per country' }
+  ];
   
   const currentMonth = new Date().toLocaleString('default', { month: 'long' });
   const currentYear = new Date().getFullYear();
@@ -183,6 +250,16 @@ const TrialDashboard = () => {
     }, 2000);
   };
 
+  const handleNextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+    setActiveTab(slides[(currentSlide + 1) % slides.length].id);
+  };
+
+  const handlePrevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+    setActiveTab(slides[(currentSlide - 1 + slides.length) % slides.length].id);
+  };
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Nav />
@@ -190,7 +267,7 @@ const TrialDashboard = () => {
       <main className="flex-grow pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Complex Crises Anticipated Response</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Complex Crisis Anticipated Response</h1>
             <div className="flex items-center space-x-2">
               <span className="text-sm text-muted-foreground">Trial Version</span>
               <Button size="sm" variant="outline">
@@ -199,602 +276,352 @@ const TrialDashboard = () => {
             </div>
           </div>
           
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-4 mb-6">
-              <TabsTrigger value="forecasts">Forecasts</TabsTrigger>
-              <TabsTrigger value="accuracy">Accuracy Metrics</TabsTrigger>
-              <TabsTrigger value="vulnerability">Vulnerability Index</TabsTrigger>
-              <TabsTrigger value="about">About</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="forecasts" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-1">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg flex justify-between items-center">
-                      <span>Dashboard Configuration</span>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-8 w-8 p-0"
-                        onClick={() => {
-                          setSelectedCountries(['All']);
-                          setSelectedEventTypes(['All Event Types']);
-                          setTimeframe('12months');
-                          setSelectedView(0);
-                          toast({
-                            title: "Reset complete",
-                            description: "Dashboard has been reset to default settings",
-                          });
-                        }}
-                      >
-                        <RefreshCw className="h-4 w-4" />
-                      </Button>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4 mb-6">
-                      <h4 className="font-medium">Saved Views</h4>
-                      <div className="relative">
-                        <select 
-                          className="w-full p-2 pr-8 border rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-primary"
-                          value={selectedView}
-                          onChange={(e) => setSelectedView(Number(e.target.value))}
-                        >
-                          <option value={0}>Custom View</option>
-                          {savedViews.map(view => (
-                            <option key={view.id} value={view.id}>{view.name}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="flex">
-                        <input
-                          type="text"
-                          placeholder="Name this configuration..."
-                          className="flex-1 p-2 border rounded-l-md focus:outline-none focus:ring-1 focus:ring-primary"
-                          value={dashboardName}
-                          onChange={(e) => setDashboardName(e.target.value)}
-                        />
-                        <Button 
-                          variant="secondary"
-                          className="rounded-l-none"
-                          onClick={handleSaveView}
-                        >
-                          <Save className="h-4 w-4 mr-2" /> Save
-                        </Button>
-                      </div>
+          <div className="relative mb-8">
+            <div className="flex justify-center">
+              <div className="flex items-center space-x-2">
+                <Button variant="outline" size="icon" onClick={handlePrevSlide}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                
+                <div className="grid grid-cols-2 gap-4 w-[580px]">
+                  {slides.map((slide, index) => (
+                    <div 
+                      key={slide.id}
+                      className={`p-4 cursor-pointer border rounded-md ${
+                        currentSlide === index 
+                          ? "bg-gray-100 border-gray-300" 
+                          : "bg-white border-gray-200"
+                      }`}
+                      onClick={() => {
+                        setCurrentSlide(index);
+                        setActiveTab(slide.id);
+                      }}
+                    >
+                      <div className="font-medium">{slide.title}</div>
+                      <div className="text-sm text-gray-500">{slide.subtitle}</div>
                     </div>
-                    
-                    <div className="mb-6 border-t pt-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-medium">Event Types</h4>
-                        <span className="text-xs text-muted-foreground">
-                          {selectedEventTypes.length === 1 && selectedEventTypes[0] === 'All Event Types' 
-                            ? 'All selected'
-                            : `${selectedEventTypes.length} selected`}
-                        </span>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        {[...violenceTypeData, ...disasterTypeData].map((item) => (
-                          <div key={item.type} className="space-y-1">
-                            <div className="flex justify-between items-center">
+                  ))}
+                </div>
+                
+                <Button variant="outline" size="icon" onClick={handleNextSlide}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          
+          <div className="space-y-6">
+            {activeTab === 'needsIndex' && (
+              <>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <Card className="col-span-3">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-xl">Most Needs Index</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="relative">
+                        <div className="aspect-[16/9] bg-gray-100 flex items-center justify-center">
+                          <img 
+                            src="/lovable-uploads/96a24a9c-df61-447f-840d-2ca71c02cb38.png" 
+                            alt="Crisis Forecast Map" 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        
+                        <div className="absolute bottom-4 left-4 right-4 flex justify-between">
+                          <div className="bg-white/80 backdrop-blur-sm p-3 rounded-md shadow-sm">
+                            <div className="text-sm font-medium">Most Needs</div>
+                            <div className="flex items-center space-x-4 mt-2">
                               <div className="flex items-center">
-                                <input
-                                  type="checkbox"
-                                  id={`type-${item.type}`}
-                                  className="rounded text-primary focus:ring-primary"
-                                  checked={selectedEventTypes.includes(item.type) || selectedEventTypes.includes('All Event Types')}
-                                  onChange={(e) => {
-                                    if (e.target.checked) {
-                                      if (item.type === 'All Event Types') {
-                                        setSelectedEventTypes(['All Event Types']);
-                                      } else {
-                                        setSelectedEventTypes(prev => 
-                                          prev.includes('All Event Types')
-                                            ? [item.type]
-                                            : [...prev.filter(t => t !== 'All Event Types'), item.type]
-                                        );
-                                      }
-                                    } else {
-                                      setSelectedEventTypes(prev => prev.filter(t => t !== item.type));
-                                    }
-                                  }}
-                                />
-                                <label htmlFor={`type-${item.type}`} className="ml-2 text-sm font-medium">
-                                  {item.type}
-                                </label>
+                                <div className="w-4 h-4 rounded-full bg-blue-500 mr-2"></div>
+                                <span className="text-xs">Cluster 1</span>
                               </div>
-                              <span className="text-sm font-semibold">
-                                {item.events.toLocaleString()}
-                              </span>
-                            </div>
-                            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                              <div 
-                                className="h-full bg-primary" 
-                                style={{ width: `${Math.min(100, (item.events / 15000) * 100)}%` }} 
-                              />
-                            </div>
-                            <div className="flex justify-end">
-                              <span className={`text-xs px-2 py-0.5 rounded ${getChangeColor(item.change)} ${getChangeBackground(item.change)}`}>
-                                {item.change > 0 ? '+' : ''}{item.change}%
-                              </span>
+                              <div className="flex items-center">
+                                <div className="w-4 h-4 rounded-full bg-orange-500 mr-2"></div>
+                                <span className="text-xs">Cluster 2</span>
+                              </div>
+                              <div className="flex items-center">
+                                <div className="w-4 h-4 rounded-full bg-red-500 mr-2"></div>
+                                <span className="text-xs">Cluster 3</span>
+                              </div>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-4 border-t pt-4">
-                      <h4 className="font-medium">Country</h4>
-                      <div className="relative">
-                        <select 
-                          className="w-full p-2 pr-8 border rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-primary"
-                          value={selectedCountries.length === 1 ? selectedCountries[0] : "multiple"}
-                          onChange={(e) => {
-                            if (e.target.value !== "multiple") {
-                              setSelectedCountries([e.target.value]);
-                            }
-                          }}
-                        >
-                          <option value="all">All</option>
-                          <option value="multiple" disabled={selectedCountries.length <= 1}>
-                            {selectedCountries.length > 1 ? `${selectedCountries.length} countries selected` : ""}
-                          </option>
-                          {forecastData.map(item => (
-                            <option key={item.country} value={item.country}>{item.country}</option>
-                          ))}
-                        </select>
-                      </div>
-                      
-                      <h4 className="font-medium">Compare forecast to</h4>
-                      <div className="relative">
-                        <select 
-                          className="w-full p-2 pr-8 border rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-primary"
-                          value={timeframe}
-                          onChange={(e) => setTimeframe(e.target.value)}
-                        >
-                          <option value="12months">Last 12 months</option>
-                          <option value="6months">Last 6 months</option>
-                          <option value="3months">Last 3 months</option>
-                        </select>
-                      </div>
-                      
-                      <h4 className="font-medium">Chart type</h4>
-                      <div className="flex space-x-2">
-                        <Button 
-                          variant={chartType === 'line' ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setChartType('line')}
-                        >
-                          <LineChartIcon className="h-4 w-4 mr-2" />
-                          Line
-                        </Button>
-                        <Button 
-                          variant={chartType === 'bar' ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setChartType('bar')}
-                        >
-                          <BarChart3 className="h-4 w-4 mr-2" />
-                          Bar
-                        </Button>
-                        <Button 
-                          variant={chartType === 'area' ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setChartType('area')}
-                        >
-                          <LineChartIcon className="h-4 w-4 mr-2" />
-                          Area
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 space-y-3 border-t pt-4">
-                      <Button 
-                        variant="outline" 
-                        className="w-full flex items-center justify-center"
-                        onClick={handleSetupAlerts}
-                      >
-                        <Bell className="h-4 w-4 mr-2" />
-                        Configure Email Alerts
-                      </Button>
-                      
-                      <Button 
-                        variant="outline" 
-                        className="w-full flex items-center justify-center"
-                        onClick={handleGenerateReport}
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Generate Insights Report
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card className="lg:col-span-2">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">World Map View</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <div className="relative">
-                      <div className="aspect-[16/9] bg-gray-100 flex items-center justify-center">
-                        <img 
-                          src="/lovable-uploads/b6127ca4-fcb0-4f11-a176-f4c45c8b7669.png" 
-                          alt="Crisis Forecast Map" 
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute top-2 right-2 flex flex-col space-y-2">
-                          <Button size="icon" variant="secondary" className="h-8 w-8 bg-white shadow-md">
-                            <span className="text-lg">+</span>
-                          </Button>
-                          <Button size="icon" variant="secondary" className="h-8 w-8 bg-white shadow-md">
-                            <span className="text-lg">−</span>
-                          </Button>
+                          
+                          <div className="flex flex-col space-y-2">
+                            <div className="bg-white/80 backdrop-blur-sm p-2 rounded-md shadow-sm">
+                              <select className="text-xs w-full bg-transparent border-none focus:ring-0">
+                                <option>All</option>
+                                {forecastData.map(item => (
+                                  <option key={item.country} value={item.country}>{item.country}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="bg-white/80 backdrop-blur-sm p-2 rounded-md shadow-sm">
+                              <select className="text-xs w-full bg-transparent border-none focus:ring-0">
+                                <option>All Event Types</option>
+                                {violenceTypeData.map(item => (
+                                  <option key={item.type} value={item.type}>{item.type}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="bg-white/80 backdrop-blur-sm p-2 rounded-md shadow-sm">
+                              <select className="text-xs w-full bg-transparent border-none focus:ring-0">
+                                <option>Last 12 months</option>
+                                <option>Last 6 months</option>
+                                <option>Last 3 months</option>
+                              </select>
+                            </div>
+                            <div className="bg-white/80 backdrop-blur-sm p-2 rounded-md shadow-sm">
+                              <select className="text-xs w-full bg-transparent border-none focus:ring-0">
+                                <option>April 2025</option>
+                                <option>May 2025</option>
+                                <option>June 2025</option>
+                              </select>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      <div className="absolute bottom-4 right-4 flex space-x-2">
-                        <div className="flex items-center bg-white px-3 py-1 rounded-md shadow-sm text-xs">
-                          <span className="w-3 h-3 bg-gray-300 rounded-sm mr-2"></span>
-                          <span>Fewer than 5 Events</span>
-                        </div>
-                        <div className="flex items-center bg-white px-3 py-1 rounded-md shadow-sm text-xs">
-                          <span className="w-3 h-3 bg-yellow-200 rounded-sm mr-2"></span>
-                          <span>Predicted Decrease</span>
-                        </div>
-                        <div className="flex items-center bg-white px-3 py-1 rounded-md shadow-sm text-xs">
-                          <span className="w-3 h-3 bg-orange-200 rounded-sm mr-2"></span>
-                          <span>Limited change</span>
-                        </div>
-                        <div className="flex items-center bg-white px-3 py-1 rounded-md shadow-sm text-xs">
-                          <span className="w-3 h-3 bg-red-200 rounded-sm mr-2"></span>
-                          <span>Predicted Increase</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between">
-                    <CardTitle className="text-lg">Global (All Event Types)</CardTitle>
-                    <div className="flex space-x-2">
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <span className="sr-only">View chart data</span>
-                        <BarChart3 className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <span className="sr-only">View full screen</span>
-                        <LineChartIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer className="aspect-[4/2]" config={{
-                    historical: {
-                      label: 'Historical events',
-                      theme: {
-                        light: '#3b82f6',
-                        dark: '#60a5fa',
-                      }
-                    },
-                    forecasted: {
-                      label: 'Forecasted events',
-                      theme: {
-                        light: '#f97316',
-                        dark: '#fb923c',
-                      }
-                    }
-                  }}>
-                    {chartType === 'line' && (
-                      <LineChart
-                        data={historyData}
-                        margin={{ top: 5, right: 10, left: 10, bottom: 0 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="month" tickLine={false} axisLine={false} />
-                        <YAxis
-                          tickLine={false}
-                          axisLine={false}
-                          tickFormatter={(value) => `${value / 1000}k`}
-                        />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Line
-                          type="monotone"
-                          dataKey="historical"
-                          stroke="var(--color-historical)"
-                          strokeWidth={2}
-                          dot={{ r: 4, strokeWidth: 2 }}
-                          activeDot={{ r: 6, strokeWidth: 2 }}
-                          name="historical"
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="forecasted"
-                          stroke="var(--color-forecasted)"
-                          strokeWidth={2}
-                          dot={{ r: 4, strokeWidth: 2 }}
-                          activeDot={{ r: 6, strokeWidth: 2 }}
-                          name="forecasted"
-                        />
-                      </LineChart>
-                    )}
-                    {chartType === 'bar' && (
-                      <BarChart
-                        data={historyData}
-                        margin={{ top: 5, right: 10, left: 10, bottom: 0 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="month" tickLine={false} axisLine={false} />
-                        <YAxis
-                          tickLine={false}
-                          axisLine={false}
-                          tickFormatter={(value) => `${value / 1000}k`}
-                        />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Bar dataKey="historical" name="historical" fill="var(--color-historical)" />
-                        <Bar dataKey="forecasted" name="forecasted" fill="var(--color-forecasted)" />
-                      </BarChart>
-                    )}
-                    {chartType === 'area' && (
-                      <AreaChart
-                        data={historyData}
-                        margin={{ top: 5, right: 10, left: 10, bottom: 0 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="month" tickLine={false} axisLine={false} />
-                        <YAxis
-                          tickLine={false}
-                          axisLine={false}
-                          tickFormatter={(value) => `${value / 1000}k`}
-                        />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Area
-                          type="monotone"
-                          dataKey="historical"
-                          stroke="var(--color-historical)"
-                          fill="var(--color-historical)"
-                          fillOpacity={0.3}
-                          name="historical"
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="forecasted"
-                          stroke="var(--color-forecasted)"
-                          fill="var(--color-forecasted)"
-                          fillOpacity={0.3}
-                          name="forecasted"
-                        />
-                      </AreaChart>
-                    )}
-                  </ChartContainer>
-                  <div className="flex justify-between items-center mt-2">
-                    <ChartLegend
-                      className="flex-1 flex items-center space-x-4"
-                      payload={[
-                        { value: 'Historical events', color: '#3b82f6', dataKey: 'historical' },
-                        { value: 'Forecasted events', color: '#f97316', dataKey: 'forecasted' }
-                      ]}
-                    />
-                    <div className="flex space-x-4 text-sm">
-                      <button className="text-primary hover:underline flex items-center">
-                        <Info className="h-3 w-3 mr-1" />
-                        What's driving the forecasts?
-                      </button>
-                      <button className="text-primary hover:underline">
-                        Learn more
-                      </button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">
-                    Forecasted Events (All Event Types) for {currentMonth} {currentYear}
-                    <span className="block text-sm font-normal mt-1 text-muted-foreground">
-                      Relative to {timeframe === '12months' ? '12-Month' : timeframe === '6months' ? '6-Month' : '3-Month'} Average
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="overflow-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left font-medium py-2 px-4">Country</th>
-                          <th className="text-right font-medium py-2 px-4">Forecast</th>
-                          <th className="text-right font-medium py-2 px-4">Average</th>
-                          <th className="text-right font-medium py-2 px-4">Predicted Change</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredForecastData.map((row) => (
-                          <tr key={row.country} className="border-b hover:bg-gray-50">
-                            <td className="py-2 px-4">{row.country}</td>
-                            <td className="text-right py-2 px-4">{row.forecast}</td>
-                            <td className="text-right py-2 px-4">{row.average}</td>
-                            <td className="text-right py-2 px-4">
-                              <span className={`px-2 py-0.5 rounded ${getChangeColor(row.change)} ${getChangeBackground(row.change)}`}>
-                                {row.change > 0 ? '+' : ''}{row.change}%
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {showSubscribeModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <Card className="w-full max-w-md">
-                    <CardHeader>
-                      <CardTitle>Upgrade to Premium</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p>To unlock premium features including:</p>
-                      <ul className="list-disc pl-5 space-y-2">
-                        <li>Save custom dashboard configurations</li>
-                        <li>Set up email alerts for forecast changes</li>
-                        <li>Generate detailed insights reports</li>
-                        <li>Access historical data going back 5 years</li>
-                        <li>API access for integration with your systems</li>
-                      </ul>
-                      <div className="flex justify-end space-x-3 mt-6">
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setShowSubscribeModal(false)}
-                        >
-                          Continue with Trial
-                        </Button>
-                        <Button onClick={() => {
-                          toast({
-                            title: "Thank you for your interest!",
-                            description: "This is a demo application. In a real app, you would be directed to subscription options.",
-                          });
-                          setShowSubscribeModal(false);
-                        }}>
-                          View Plans
-                        </Button>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="accuracy">
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Forecast Accuracy Metrics</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="flex flex-col items-center justify-center p-6 border rounded-lg">
-                        <div className="text-3xl font-bold text-primary">89%</div>
-                        <div className="mt-2 text-sm text-muted-foreground text-center">Overall Accuracy Rate</div>
-                      </div>
-                      <div className="flex flex-col items-center justify-center p-6 border rounded-lg">
-                        <div className="text-3xl font-bold text-primary">±5.2%</div>
-                        <div className="mt-2 text-sm text-muted-foreground text-center">Average Margin of Error</div>
-                      </div>
-                      <div className="flex flex-col items-center justify-center p-6 border rounded-lg">
-                        <div className="text-3xl font-bold text-primary">92%</div>
-                        <div className="mt-2 text-sm text-muted-foreground text-center">Directional Accuracy</div>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-8">
-                      <h3 className="text-lg font-medium mb-4">Historical Forecast Performance</h3>
-                      <div className="h-80">
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Conflict Clusters</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-96">
                         <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart
-                            data={[
-                              { month: 'Jan', accuracy: 85 },
-                              { month: 'Feb', accuracy: 87 },
-                              { month: 'Mar', accuracy: 82 },
-                              { month: 'Apr', accuracy: 88 },
-                              { month: 'May', accuracy: 90 },
-                              { month: 'Jun', accuracy: 89 },
-                              { month: 'Jul', accuracy: 91 },
-                              { month: 'Aug', accuracy: 93 },
-                              { month: 'Sep', accuracy: 90 },
-                              { month: 'Oct', accuracy: 88 },
-                              { month: 'Nov', accuracy: 86 },
-                              { month: 'Dec', accuracy: 89 }
-                            ]}
+                          <BarChart
+                            data={conflictClusterData}
+                            layout="vertical"
+                            margin={{ top: 5, right: 30, left: 60, bottom: 5 }}
                           >
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="month" />
-                            <YAxis domain={[75, 100]} />
-                            <Tooltip />
-                            <Area type="monotone" dataKey="accuracy" stroke="#8884d8" fill="#8884d8" />
-                          </AreaChart>
+                            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+                            <XAxis type="number" />
+                            <YAxis 
+                              type="category" 
+                              dataKey="country" 
+                              tick={{ fontSize: 12 }} 
+                              width={100}
+                            />
+                            <Tooltip formatter={(value) => [`${value} events`, 'Conflicts']} />
+                            <Bar dataKey="conflicts" name="Conflict Events">
+                              {conflictClusterData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={getClusterColor(entry.cluster)} />
+                              ))}
+                            </Bar>
+                          </BarChart>
                         </ResponsiveContainer>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
+                      <div className="mt-4">
+                        <div className="text-sm font-medium mb-2">Cluster Legends</div>
+                        <div className="space-y-1 text-sm">
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 rounded-sm bg-blue-500 mr-2"></div>
+                            <span>Cluster 1 = extreme severity of needs (most conflict events + lowest HDI)</span>
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 rounded-sm bg-orange-500 mr-2"></div>
+                            <span>Cluster 2 = high severity of needs (high conflict events + medium HDI)</span>
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 rounded-sm bg-red-500 mr-2"></div>
+                            <span>Cluster 3 = medium severity of needs (mid conflict events + high HDI)</span>
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 rounded-sm bg-green-500 mr-2"></div>
+                            <span>Cluster 4 = low severity of needs (low conflict events + highest HDI)</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Top 10 Disaster-Affected Countries</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-96">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={disasterData}
+                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="country" />
+                            <YAxis />
+                            <Tooltip formatter={(value) => [`${value} people`, 'Injured or Affected']} />
+                            <Bar dataKey="injured" name="Number of Injured/Affected" fill="#38bdf8" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </>
+            )}
             
-            <TabsContent value="vulnerability">
-              <div className="space-y-6">
+            {activeTab === 'hdiForecasts' && (
+              <>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <Card className="lg:col-span-1">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Country Search Engine</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left font-medium py-2 px-2">Country</th>
+                              <th className="text-right font-medium py-2 px-2">Forecast</th>
+                              <th className="text-right font-medium py-2 px-2">Average</th>
+                              <th className="text-right font-medium py-2 px-2">Change</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredForecastData.slice(0, 10).map((row) => (
+                              <tr key={row.country} className="border-b hover:bg-gray-50">
+                                <td className="py-1 px-2">{row.country}</td>
+                                <td className="text-right py-1 px-2">{row.forecast}</td>
+                                <td className="text-right py-1 px-2">{row.average}</td>
+                                <td className="text-right py-1 px-2">
+                                  <span className={`px-1 py-0.5 rounded text-xs ${getChangeColor(row.change)} ${getChangeBackground(row.change)}`}>
+                                    {row.change > 0 ? '+' : ''}{row.change}%
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        
+                        <div className="pt-3 border-t">
+                          <div className="text-sm font-medium mb-2">Search engine with filters</div>
+                          <div className="flex flex-col space-y-3">
+                            <input 
+                              type="text" 
+                              placeholder="Search countries..." 
+                              className="border rounded-md p-2 text-sm"
+                            />
+                            <select className="border rounded-md p-2 text-sm">
+                              <option>All Event Types</option>
+                              {violenceTypeData.map(item => (
+                                <option key={item.type}>{item.type}</option>
+                              ))}
+                            </select>
+                            <Button size="sm">
+                              <Filter className="h-4 w-4 mr-2" />
+                              Apply Filters
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="lg:col-span-2">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">HDI and Disaster Correlation</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-96">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={hdiDisasterData}
+                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="country" />
+                            <YAxis />
+                            <Tooltip 
+                              formatter={(value, name) => [
+                                `${value}`, 
+                                name === 'hdi' ? 'HDI Score' : 
+                                name === 'numDisaster' ? 'Disaster Events' : 'Conflict Events'
+                              ]} 
+                            />
+                            <Bar dataKey="hdi" name="HDI Score" fill="#f97316" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Vulnerability Index by Country</CardTitle>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">HDI and Conflict Correlation</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="overflow-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b">
-                            <th className="text-left font-medium py-2 px-4">Country</th>
-                            <th className="text-right font-medium py-2 px-4">Human Development Index</th>
-                            <th className="text-right font-medium py-2 px-4">Vulnerability Score</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {vulnerabilityData.map((row) => (
-                            <tr key={row.country} className="border-b hover:bg-gray-50">
-                              <td className="py-2 px-4">{row.country}</td>
-                              <td className="text-right py-2 px-4">{row.hdi.toFixed(3)}</td>
-                              <td className="text-right py-2 px-4">
-                                <span className={`px-2 py-0.5 rounded ${getVulnerabilityColor(row.vulnerabilityScore)} bg-opacity-10`}>
-                                  {row.vulnerabilityScore}/100
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    <div className="h-96">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={hdiDisasterData}
+                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                          <XAxis dataKey="country" />
+                          <YAxis />
+                          <Tooltip 
+                            formatter={(value, name) => [
+                              `${value}`, 
+                              name === 'hdi' ? 'HDI Score' : 
+                              name === 'conflictEvents' ? 'Conflict Events' : 'Disaster Events'
+                            ]} 
+                          />
+                          <Bar dataKey="hdi" name="HDI Score" fill="#f97316" />
+                          <Bar dataKey="conflictEvents" name="Conflict Events" fill="#ef4444" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="mt-4 text-sm text-gray-500">
+                      <p>Search engine with filters of layers of map (HDI + conflict events + disaster events).</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+            
+            {showSubscribeModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <Card className="w-full max-w-md">
+                  <CardHeader>
+                    <CardTitle>Upgrade to Premium</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p>To unlock premium features including:</p>
+                    <ul className="list-disc pl-5 space-y-2">
+                      <li>Save custom dashboard configurations</li>
+                      <li>Set up email alerts for forecast changes</li>
+                      <li>Generate detailed insights reports</li>
+                      <li>Access historical data going back 5 years</li>
+                      <li>API access for integration with your systems</li>
+                    </ul>
+                    <div className="flex justify-end space-x-3 mt-6">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setShowSubscribeModal(false)}
+                      >
+                        Continue with Trial
+                      </Button>
+                      <Button onClick={() => {
+                        toast({
+                          title: "Thank you for your interest!",
+                          description: "This is a demo application. In a real app, you would be directed to subscription options.",
+                        });
+                        setShowSubscribeModal(false);
+                      }}>
+                        View Plans
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
               </div>
-            </TabsContent>
-            
-            <TabsContent value="about">
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>About This Dashboard</CardTitle>
-                  </CardHeader>
-                  <CardContent className="prose max-w-none">
-                    <p>The Complex Crises Anticipated Response (C-CAR) system provides forecasts of political violence and natural disasters to help organizations prepare for and respond to humanitarian crises.</p>
-                    <h3>Data Sources</h3>
-                    <p>Our forecasts are powered by a combination of:</p>
-                    <ul>
-                      <li>Historical event data from ACLED, EM-DAT, and other conflict/disaster databases</li>
-                      <li>Environmental and climate indicators from satellite imagery</li>
-                      <li>Economic indicators from World Bank and IMF</li>
-                      <li>News and social media analysis</li>
-                      <li>Expert assessments from regional specialists</li>
-                    </ul>
-                    <h3>Methodology</h3>
-                    <p>Our forecasting models utilize ensemble machine learning approaches, combining:</p>
-                    <ul>
-                      <li>Time series forecasting</li>
-                      <li>Natural language processing</li>
-                      <li>Spatial analysis</li>
-                      <li>Bayesian networks</li>
-                    </ul>
-                    <p>Models are trained on 10+ years of historical data and are updated monthly as new data becomes available.</p>
-                    <h3>How to Use This Dashboard</h3>
-                    <p>This trial version provides limited access to C-CAR's capabilities. Explore forecasts for major humanitarian crises, review model accuracy, and examine vulnerability indicators for high-risk countries.</p>
-                    <p>For full access including API integration, customized alerts, and detailed analysis, please contact our team to discuss subscription options.</p>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-          </Tabs>
+            )}
+          </div>
         </div>
       </main>
 
