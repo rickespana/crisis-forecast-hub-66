@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ChartContainer, ChartLegend, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -10,11 +9,26 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { 
   Map, ChevronLeft, ChevronRight, Download, Info, Save, Bell, BarChart3, 
-  LineChart as LineChartIcon, Filter, RefreshCw
+  LineChart as LineChartIcon, Filter, RefreshCw, Database
 } from 'lucide-react';
 import Nav from '../components/Nav';
 import Footer from '../components/Footer';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
+
+// Database interface types based on the database schema
+interface CrisisData {
+  year: number;
+  week_number: number;
+  country: string;
+  num_deaths: number;
+  num_conflicts: number;
+  num_disasters: number;
+  num_injured: number;
+  num_affected: number;
+  hdi: number;
+  most_needs: number;
+}
 
 // Data for the crisis map and charts
 const forecastData = [
@@ -32,7 +46,7 @@ const forecastData = [
   { country: 'Nigeria', forecast: 253, average: 329, change: -23 },
   { country: 'Dem. Rep. Congo', forecast: 234, average: 208, change: 12 },
   { country: 'Pakistan', forecast: 217, average: 179, change: 21 },
-  { country: 'Ethiopia', country: 'Ethiopia', forecast: 216, average: 280, change: -23 },
+  { country: 'Ethiopia', forecast: 216, average: 280, change: -23 },
   { country: 'Colombia', forecast: 192, average: 186, change: 3 },
   { country: 'Lebanon', forecast: 190, average: 286, change: -33 },
   { country: 'Burkina Faso', forecast: 142, average: 154, change: -8 },
@@ -185,6 +199,9 @@ const TrialDashboard = () => {
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
   const [dashboardName, setDashboardName] = useState('');
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedWeek, setSelectedWeek] = useState(1);
   
   const slides = [
     { id: 'needsIndex', title: 'Most Needs Index Map', subtitle: 'Bar charts of most affected countries' },
@@ -194,20 +211,101 @@ const TrialDashboard = () => {
   const currentMonth = new Date().toLocaleString('default', { month: 'long' });
   const currentYear = new Date().getFullYear();
 
-  useEffect(() => {
-    if (selectedView > 0) {
-      const view = savedViews.find(v => v.id === selectedView);
-      if (view) {
-        setSelectedCountries(view.countries);
-        setSelectedEventTypes(view.eventTypes);
-        setTimeframe(view.timeframe);
-        toast({
-          title: "Dashboard view loaded",
-          description: `Loaded "${view.name}" configuration`,
-        });
+  // Query to fetch crisis data from database
+  const { data: crisisData, error, isError } = useQuery({
+    queryKey: ['crisisData', selectedYear, selectedWeek],
+    queryFn: async (): Promise<CrisisData[]> => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`/api/crisis-data?year=${selectedYear}&week=${selectedWeek}`);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('Error fetching crisis data:', error);
+        throw error;
+      } finally {
+        setIsLoading(false);
       }
     }
-  }, [selectedView]);
+  });
+
+  // Transform database data to chart format 
+  const transformDataForCharts = () => {
+    if (!crisisData || crisisData.length === 0) {
+      return {
+        countryForecasts: forecastData, // Use mock data as fallback
+        conflictClusterData: conflictClusterData,
+        disasterData: disasterData,
+        hdiDisasterData: hdiDisasterData
+      };
+    }
+
+    // Transform for country forecasts
+    const countryForecasts = crisisData.map(item => {
+      // Calculate a pseudo "change" value based on week_number variation
+      const change = ((item.num_conflicts / (item.week_number || 1)) - 10);
+      
+      return {
+        country: item.country,
+        forecast: item.num_conflicts,
+        average: item.num_conflicts - (item.num_conflicts * (change / 100)),
+        change: Math.round(change)
+      };
+    });
+
+    // Transform for conflict cluster
+    const transformedConflictClusterData = crisisData.map(item => {
+      // Define cluster based on needs and HDI
+      const cluster = item.hdi < 0.5 ? 1 : item.hdi < 0.7 ? 2 : 3;
+      
+      return {
+        country: item.country,
+        conflicts: item.num_conflicts,
+        cluster: cluster
+      };
+    });
+
+    // Transform for disaster data
+    const transformedDisasterData = crisisData.map(item => ({
+      country: item.country,
+      injured: item.num_injured
+    }));
+
+    // Transform for HDI and disaster correlation
+    const transformedHdiData = crisisData.map(item => ({
+      country: item.country,
+      hdi: item.hdi * 1000, // Scale HDI for better visualization
+      conflictEvents: item.num_conflicts,
+      numDisaster: item.num_disasters
+    }));
+
+    return {
+      countryForecasts: countryForecasts.slice(0, 20), // Limit to 20 countries
+      conflictClusterData: transformedConflictClusterData.slice(0, 19),
+      disasterData: transformedDisasterData.slice(0, 10),
+      hdiDisasterData: transformedHdiData.slice(0, 10)
+    };
+  };
+
+  const { 
+    countryForecasts, 
+    conflictClusterData: transformedConflictData, 
+    disasterData: transformedDisasterData,
+    hdiDisasterData: transformedHdiData
+  } = transformDataForCharts();
+
+  useEffect(() => {
+    if (isError) {
+      toast({
+        title: "Error loading data",
+        description: "Could not fetch crisis data from the database. Using fallback data.",
+        variant: "destructive"
+      });
+    }
+  }, [isError, toast]);
 
   const filteredForecastData = forecastData.filter(item => {
     if (selectedCountries.includes('All')) return true;
@@ -258,6 +356,14 @@ const TrialDashboard = () => {
   const handlePrevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
     setActiveTab(slides[(currentSlide - 1 + slides.length) % slides.length].id);
+  };
+
+  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedYear(parseInt(e.target.value));
+  };
+
+  const handleWeekChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedWeek(parseInt(e.target.value));
   };
   
   return (
@@ -351,7 +457,7 @@ const TrialDashboard = () => {
                             <div className="bg-white/80 backdrop-blur-sm p-2 rounded-md shadow-sm">
                               <select className="text-xs w-full bg-transparent border-none focus:ring-0">
                                 <option>All</option>
-                                {forecastData.map(item => (
+                                {countryForecasts.map(item => (
                                   <option key={item.country} value={item.country}>{item.country}</option>
                                 ))}
                               </select>
@@ -394,7 +500,7 @@ const TrialDashboard = () => {
                       <div className="h-96">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart
-                            data={conflictClusterData}
+                            data={transformedConflictData || conflictClusterData}
                             layout="vertical"
                             margin={{ top: 5, right: 30, left: 60, bottom: 5 }}
                           >
@@ -408,7 +514,7 @@ const TrialDashboard = () => {
                             />
                             <Tooltip formatter={(value) => [`${value} events`, 'Conflicts']} />
                             <Bar dataKey="conflicts" name="Conflict Events">
-                              {conflictClusterData.map((entry, index) => (
+                              {(transformedConflictData || conflictClusterData).map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={getClusterColor(entry.cluster)} />
                               ))}
                             </Bar>
@@ -447,7 +553,7 @@ const TrialDashboard = () => {
                       <div className="h-96">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart
-                            data={disasterData}
+                            data={transformedDisasterData || disasterData}
                             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                           >
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -483,7 +589,7 @@ const TrialDashboard = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            {filteredForecastData.slice(0, 10).map((row) => (
+                            {(countryForecasts).slice(0, 10).map((row) => (
                               <tr key={row.country} className="border-b hover:bg-gray-50">
                                 <td className="py-1 px-2">{row.country}</td>
                                 <td className="text-right py-1 px-2">{row.forecast}</td>
@@ -530,7 +636,7 @@ const TrialDashboard = () => {
                       <div className="h-96">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart
-                            data={hdiDisasterData}
+                            data={transformedHdiData || hdiDisasterData}
                             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                           >
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -559,7 +665,7 @@ const TrialDashboard = () => {
                     <div className="h-96">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
-                          data={hdiDisasterData}
+                          data={transformedHdiData || hdiDisasterData}
                           margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" vertical={false} />
